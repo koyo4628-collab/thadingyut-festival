@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>သီတင်းကျွတ် ပွဲတော် အထူးအက်ပ်</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Pyidaungsu:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Supabase JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary-color: #ff6b00;
+            --secondary-color: #ffb703;
+            --dark-bg: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #f1f1f1;
+            --accent-color: #d90429;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pyidaungsu', sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: var(--text-color);
+            min-height: 100dvh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        .container {
+            width: 100%;
+            height: 100dvh;
+            background: var(--card-bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        header {
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            color: #000;
+            padding: 12px 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 17px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .section {
+            padding: 15px;
+            display: none;
+            flex-grow: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .section.active {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--secondary-color);
+            font-size: 14px;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            background: #2a2a2a;
+            color: #fff;
+            font-size: 15px;
+        }
+        button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
+            transition: 0.3s;
+            width: 100%;
+            margin-top: 8px;
+        }
+        button:hover {
+            background: #e05e00;
+        }
+        .btn-secondary {
+            background: #444;
+        }
+        .btn-secondary:hover {
+            background: #555;
+        }
+        /* Dashboard Grid Menu (10 Features) */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            padding-bottom: 15px;
+        }
+        .dash-card {
+            background: #252525;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .dash-card:hover {
+            border-color: var(--secondary-color);
+            background: #2d2d2d;
+        }
+        .dash-card i {
+            font-size: 26px;
+            color: var(--secondary-color);
+            margin-bottom: 8px;
+            display: block;
+        }
+        .dash-card span {
+            font-size: 13px;
+            font-weight: bold;
+            color: #fff;
+        }
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            background: #181818;
+            overflow-x: auto;
+            flex-shrink: 0;
+            border-top: 1px solid #333;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .nav-tab {
+            flex: 1;
+            padding: 10px 4px;
+            text-align: center;
+            cursor: pointer;
+            background: #222;
+            border-right: 1px solid #333;
+            font-size: 11px;
+            white-space: nowrap;
+            color: #aaa;
+        }
+        .nav-tab.active {
+            background: var(--primary-color);
+            color: white;
+            font-weight: bold;
+        }
+        .nav-tab i {
+            display: block;
+            font-size: 15px;
+            margin-bottom: 2px;
+        }
+        /* Chat UI */
+        .chat-container {
+            display: flex;
+            height: 100%;
+            gap: 10px;
+        }
+        .users-list {
+            width: 38%;
+            border-right: 1px solid #333;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        .user-item {
+            padding: 10px;
+            background: #252525;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+        .user-item:hover, .user-item.active {
+            background: var(--primary-color);
+            color: white;
+        }
+        .chat-box-area {
+            width: 62%;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .chat-messages {
+            flex-grow: 1;
+            background: #121212;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 8px;
+            overflow-y: auto;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        .chat-msg {
+            margin-bottom: 6px;
+            padding: 6px;
+            background: #222;
+            border-radius: 4px;
+        }
+        .chat-msg.mine {
+            background: #1b4d3e;
+            text-align: right;
+        }
+        /* Gallery Grid */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .media-card {
+            background: #2a2a2a;
+            border-radius: 6px;
+            overflow: hidden;
+            padding: 6px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .media-card img, .media-card video, .media-card iframe {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 4px;
+            pointer-events: none;
+        }
+        .media-user {
+            font-size: 11px;
+            color: var(--secondary-color);
+            margin-top: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .winner-box {
+            background: rgba(255, 183, 3, 0.1);
+            border: 1px dashed var(--secondary-color);
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            margin-top: 10px;
+        }
+        /* Media Modal Viewer */
+        #media-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100dvh;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        @media (min-width: 600px) {
+            body { padding: 10px; }
+            .container {
+                max-width: 500px;
+                height: 90vh;
+                border-radius: 12px;
+                box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+                border: 2px solid var(--secondary-color);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div><i class="fa-solid fa-moon"></i> သီတင်းကျွတ် ပွဲတော်</div>
+        <div id="user-status" style="font-size: 13px;"></div>
+    </header>
+
+    <!-- 1. LOGIN & REGISTER SECTION -->
+    <div id="login-section" class="section active">
+        <div style="background: rgba(217, 4, 41, 0.2); border: 1px solid var(--accent-color); padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; color: #ffb703; line-height: 1.4;">
+            <i class="fa-solid fa-triangle-exclamation"></i> <b>အရေးကြီးသတိပေးချက်:</b><br>
+            အကောင့်ဖွင့်ရန်နှင့် Database ဒေတာများ ချိတ်ဆက်ရန်အတွက် <b>VPN ဖွင့်ထားရန်</b> မဖြစ်မနေ လိုအပ်ပါသည်။
+        </div>
+
+        <h2 style="font-size: 18px; margin-bottom: 10px;"><i class="fa-solid fa-user-lock"></i> အကောင့်ဝင်ရန် / အသစ်ဖွင့်ရန်</h2>
+        <p style="font-size: 12px; color: #aaa; margin-bottom: 15px;">လူတစ်ယောက်လျှင် ၁ အကောင့်သာ ဖန်တီးခွင့်ရှိပါသည်။</p>
+        
+        <div class="form-group">
+            <label>Username (အမည်)</label>
+            <input type="text" id="auth-username" placeholder="နာမည်ထည့်ပါ">
+        </div>
+        <div class="form-group">
+            <label>Password (စကားဝှက်)</label>
+            <input type="password" id="auth-password" placeholder="စကားဝှက်ထည့်ပါ">
+        </div>
+        
+        <button onclick="handleRegister()"><i class="fa-solid fa-user-plus"></i> အကောင့်အသစ်ဖွင့်မည်</button>
+        <button class="btn-secondary" onclick="handleLogin()"><i class="fa-solid fa-right-to-bracket"></i> ဝင်ရောက်မည် (Login)</button>
+        <button class="btn-secondary" onclick="showAdminLogin()" style="margin-top: 15px;"><i class="fa-solid fa-user-shield"></i> တည်ထောင်သူ (Admin) အဖြစ် ဝင်ရန်</button>
+    </div>
+
+    <!-- ADMIN LOGIN SECTION -->
+    <div id="admin-login-section" class="section">
+        <h2 style="font-size: 18px;"><i class="fa-solid fa-user-shield"></i> တည်ထောင်သူ စကားဝှက်</h2>
+        <div class="form-group" style="margin-top: 15px;">
+            <label>Admin Password</label>
+            <input type="password" id="admin-pass-input" placeholder="Admin Pass ထည့်ပါ">
+        </div>
+        <button onclick="verifyAdmin()">Admin ဝင်မည်</button>
+        <button class="btn-secondary" onclick="switchTab('login-section')">နောက်သို့</button>
+    </div>
+
+    <!-- DASHBOARD HOME (10 FEATURES MENU) -->
+    <div id="dashboard-section" class="section">
+        <h2 style="font-size: 18px; margin-bottom: 12px; color: var(--secondary-color);"><i class="fa-solid fa-star"></i> ပွဲတော် မီနူးများ</h2>
+        <div class="dashboard-grid">
+            <div class="dash-card" onclick="switchTab('draw-section')"><i class="fa-solid fa-gift"></i><span>ကံစမ်းမဲ</span></div>
+            <div class="dash-card" onclick="switchTab('chat-section'); loadUsersList();"><i class="fa-solid fa-comments"></i><span>အသိုက်အမြုံချတ်</span></div>
+            <div class="dash-card" onclick="switchTab('gallery-section')"><i class="fa-solid fa-photo-film"></i><span>အမှတ်တရပြခန်း</span></div>
+            <div class="dash-card" onclick="switchTab('candle-section')"><i class="fa-solid fa-fire-flame-curved"></i><span>ဖယောင်းတိုင်ထွန်း</span></div>
+            <div class="dash-card" onclick="switchTab('wishes-section')"><i class="fa-solid fa-pen-nib"></i><span>ဆုတောင်းနံရံ</span></div>
+            <div class="dash-card" onclick="switchTab('music-section')"><i class="fa-solid fa-music"></i><span>ပွဲတော်တေးသံသာ</span></div>
+            <div class="dash-card" onclick="switchTab('lantern-section')"><i class="fa-solid fa-lightbulb"></i><span>မီးပုံးပျံလွှတ်ရန်</span></div>
+            <div class="dash-card" onclick="switchTab('cards-section')"><i class="fa-solid fa-envelope-open-text"></i><span>လက်ဆောင်ကတ်</span></div>
+            <div class="dash-card" onclick="switchTab('story-section')"><i class="fa-solid fa-heart"></i><span>ရင်ဖွင့်သံ</span></div>
+            <div class="dash-card" onclick="switchTab('info-section')"><i class="fa-solid fa-circle-info"></i><span>ပွဲတော်အနှစ်သာရ</span></div>
+        </div>
+    </div>
+
+    <!-- 2. LUCKY DRAW SECTION (Persistent 24H Result) -->
+    <div id="draw-section" class="section">
+        <h2 style="font-size: 18px;"><i class="fa-solid fa-trophy"></i> ကံစမ်းမဲ (၂၀ ဦးမှ ၄ ဦး)</h2>
+        <p style="font-size: 12px; color: #ccc; margin-top: 4px;">တစ်ဦးလျှင် ၅,၀၀၀ ကျပ်နှုန်းဖြင့် ချီးမြှင့်မည်။ (၂၄ နာရီ ၁ ခါ)</p>
+        
+        <div class="winner-box">
+            <h3 style="font-size: 14px;">သင့်ရဲ့ မဲရလဒ်</h3>
+            <div id="winners-list" style="margin-top: 8px; font-weight: bold; color: var(--secondary-color); font-size: 13px;">
+                <div>မဲဖောက်ရန် ခလုတ်ကို နှိပ်ပါ...</div>
+            </div>
+        </div>
+        <button onclick="startLuckyDraw()" style="margin-top: 15px;"><i class="fa-solid fa-dice"></i> မဲဖောက်မည်</button>
+        <button class="btn-secondary" onclick="switchTab('dashboard-section')" style="margin-top: 8px;">ပင်မသို့</button>
+    </div>
+
+    <!-- 3. DIRECT CHAT SECTION -->
+    <div id="chat-section" class="section">
+        <h2 style="font-size: 16px; margin-bottom: 8px;"><i class="fa-solid fa-comments"></i> အကောင့်များသို့ သီးသန့်စာပို့ရန်</h2>
+        <div class="chat-container">
+            <div class="users-list" id="users-list-container">
+                <div style="font-size: 12px; color: #888; text-align: center; padding: 10px;">အကောင့်များ ရှာဖွေနေသည်...</div>
+            </div>
+            <div class="chat-box-area">
+                <div id="active-chat-title" style="font-size: 12px; color: var(--secondary-color); margin-bottom: 4px; font-weight: bold;">သူငယ်ချင်းတစ်ဦး ရွေးပါ</div>
+                <div class="chat-messages" id="chat-messages">
+                    <div style="color: #666; text-align: center; margin-top: 20px; font-size: 12px;">ဘယ်ဘက်မှ စာပို့လိုသူကို နှိပ်ပါ</div>
+                </div>
+                <div style="display: flex; gap: 4px;">
+                    <input type="text" id="chat-input" placeholder="စာရေးရန်..." style="font-size: 13px; padding: 8px;" onkeypress="if(event.key === 'Enter') sendDirectMessage()">
+                    <button onclick="sendDirectMessage()" style="width: auto; padding: 8px 12px; margin-top:0;"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. GALLERY SECTION (Link-based, Unlimited) -->
+    <div id="gallery-section" class="section">
+        <h2 style="font-size: 18px;"><i class="fa-solid fa-photo-film"></i> အမှတ်တရ ပြခန်း (လင့်ခ်ဖြင့် တင်ရန်)</h2>
+        <div class="form-group" style="margin-top: 8px;">
+            <label>Link ထည့်ရန် (Image URL သို့မဟုတ် YouTube Video URL)</label>
+            <input type="text" id="media-url" placeholder="https://... (Direct Image or YouTube Link)">
+            <select id="media-type" style="margin-top: 6px;">
+                <option value="photo">ပုံ (Photo - အကန့်အသတ်မရှိ)</option>
+                <option value="video">ဗီဒီယို / YouTube (Video - အကန့်အသတ်မရှိ)</option>
+            </select>
+            <button onclick="uploadMediaLink()"><i class="fa-solid fa-upload"></i> လင့်ခ်တင်မည်</button>
+        </div>
+        <div class="gallery-grid" id="media-grid"></div>
+    </div>
+
+    <!-- 5. VIRTUAL CANDLE SECTION -->
+    <div id="candle-section" class="section">
+        <h2 style="font-size: 18px; color: var(--secondary-color);"><i class="fa-solid fa-fire-flame-curved"></i> ဖယောင်းတိုင်မီး ထွန်းညှိခြင်း</h2>
+        <p style="font-size: 12px; color: #ccc; margin-top: 5px;">သီတင်းကျွတ်လပြည့်နေ့မှာ ဆီမီး/ဖယောင်းတိုင် ထွန်းညှိပူဇော်ပါ -</p>
+        <div style="text-align: center; margin: 30px 0;">
+            <div id="candle-flame" style="font-size: 50px; animation: flicker 1.5s infinite alternate;">🪔</div>
+            <p id="candle-status" style="margin-top: 15px; font-weight: bold; color: var(--secondary-color);">ဖယောင်းတိုင် ထွန်းညှိပြီးပါပြီ 🙏</p>
+        </div>
+        <button class="btn-secondary" onclick="switchTab('dashboard-section')">ပင်မသို့</button>
+    </div>
+
+    <!-- 6. WISH WALL SECTION -->
+    <div id="wishes-section" class="section">
+        <h2 style="font-size: 18px; color: var(--secondary-color);"><i class="fa-solid fa-pen-nib"></i> ဆုတောင်းနံရံ</h2>
+        <div class="form-group" style="margin-top: 10px;">
+            <textarea id="wish-input" rows="3" placeholder="သင့်ရဲ့ သီတင်းကျွတ် ဆုတောင်းစကားကို ရေးပါ..."></textarea>
+            <button onclick="postWish()">ဆုတောင်းစာ တင်မည်</button>
+        </div>
+        <div id="wish-list" style="margin-top: 10px; font-size: 13px;"></div>
+    </div>
+
+    <!-- 7. MUSIC SECTION -->
+    <div id="music-section" class="section">
+        <h2 style="font-size: 18px; color: var(--secondary-color);"><i class="fa-solid fa-music"></i> သီတင်းကျွတ် တေးသံသာ</h2>
+        <p style="font-size: 13px; margin-top: 10px; color: #ddd;">ပွဲတော်ရက်များအတွက် အထူးရွေးချယ်ထားသော သီချင်းများ -</p>
+        <div style="margin-top: 15px; background: #252525; padding: 15px; border-radius: 8px; text-align: center;">
+            <i class="fa-solid fa-compact-disc" style="font-size: 40px; color: var(--secondary-color); margin-bottom: 10px; display: block;"></i>
+            <p style="font-weight: bold;">သီတင်းကျွတ် တေးသီချင်းများ</p>
+            <a href="https://www.youtube.com/results?search_query=thadingyut+songs" target="_blank" style="display: inline-block; background: #c4302b; color: white; padding: 8px 14px; border-radius: 6px; text-decoration: none; margin-top: 10px; font-size: 13px;">YouTube တွင် နားဆင်ရန်</a>
+        </div>
+    </div>
+
+    <!-- 8. LANTERN SECTION -->
+    <div id="lantern-section" class="section">
+        <h2 style="font-size: 18px; color: var(--secondary-color);"><i class="fa-solid fa-lightbulb"></i> မီးပုံးပျံ လွှတ်တင်ခြင်း</h2>
+        <div style="text-align: center; margin: 40px 0;">
+            <div style="font-size: 60px;">🏮</div>
+            <p style="margin-top: 15px; font-size: 14px; color: #ddd;">မီးပုံးပျံလေးကို ကောင်းကင်ယံသို့ လွှတ်တင်လိုက်ပါ...</p>
+        </div>
+        <button onclick="alert('🏮 သင့်ရဲ့ မီးပုံးပျံလေး ကောင်းကင်ယံသို့ အောင်မြင်စွာ ရောက်ရှိသွားပါပြီ!');">မီးပုံးပျံ လွှတ်မည်</button>
+    </div>
+
+    <!-- 9. CARDS SECTION -->
+    <div id="cards-section" class="section">
+        <h2 style="font-size: 18px; color: var(--secondary-color);"><i class="fa-solid fa-envelope-open-text"></i> သီတင်းကျွတ် လက်ဆောင်ကတ်</h2>
+        <div style="background: #252525; padding: 15px; border-radius: 8px; margin-top: 10px; border: 1px dashed var(--secondary-color); text-align: center;">
+            <p style="font-size: 15px; line-height: 1.6; color: var(--secondary-color);">
+                "မင်္ဂလာရှိသော သီတင်းကျွတ်လပြည့်နေ့မှာ ဆွေမျိုးမိတ်သင်္ဂဟ အားလုံး ကိုယ်စိတ်နှစ်ပါး ချမ်းသာကြပါစေရှင်။"
+            </p>
+            <p style="font-size: 12px; color: #aaa; margin-top: 10px;">— သီတင်းကျွတ် အထူးလက်ဆောင်ကတ်</p>
+        </div>
+    </div>
+
+    <!-- 10. DEVELOPER STORY SECTION (ရင်ဖွင့်သံ) -->
+    <div id="story-section" class="section">
+        <h2 style="font-size: 18px; color: var(--secondary-color); margin-bottom: 10px;"><i class="fa-solid fa-feather-pointed"></i> တည်ထောင်သူ၏ ရင်ဖွင့်သံ</h2>
+        <div style="background: rgba(255, 107, 0, 0.08); border-left: 4px solid var(--primary-color); padding: 14px; border-radius: 6px; font-size: 14px; line-height: 1.7; color: #ddd;">
+            <p style="margin-bottom: 10px;">🪔 သီတင်းကျွတ်လပြည့် ရောက်လာပြန်ပြီ... ကောင်းကင်ယံမှာ လမင်းကြီးက သာယာနေပေမယ့်၊ ရင်ထဲမှာတော့ မွေးရပ်မြေဆီ မပြန်နိုင်ဘဲ ဝေးကွာနေရတဲ့ လွမ်းဆွတ်မှုတွေ ခြုံလို့နေပါတယ်။</p>
+            <p style="margin-bottom: 10px;">ဒီလွမ်းဆွတ်မှုကို အဖော်ပြုရင်း၊ မွေးရပ်မြေကို မသွားနိုင်ကြပေမယ့် ဝေးကွာနေတဲ့ မိတ်ဆွေသူငယ်ချင်းတွေ ဒီနေရာလေးမှာ တစ်စုတစ်ဝေးတည်း ဆုံတွေ့နိုင်ဖို့ ရည်ရွယ်ချက်နဲ့ ဒီဝက်ဘ်ဆိုက်လေးကို ဖန်တီးခဲ့တာပါ။</p>
+            <p style="text-align: right; font-style: italic; color: var(--secondary-color);">— ဝေးရပ်မြေမှ တည်ထောင်သူ 🪔</p>
+        </div>
+    </div>
+
+    <!-- 11. FESTIVAL INFO SECTION -->
+    <div id="info-section" class="section">
+        <h2 style="font-size: 18px; color: var(--secondary-color);"><i class="fa-solid fa-circle-info"></i> ပွဲတော်အနှစ်သာရ</h2>
+        <p style="font-size: 14px; line-height: 1.6; margin-top: 10px; color: #ddd;">
+            သီတင်းကျွတ်လပြည့်နေ့သည် အဘိဓမ္မာအခါတော်နေ့ဖြစ်ပြီး၊ ဂေါတမမြတ်စွာဘုရားရှင် တာဝတိံသာနတ်ပြည်မှ လူ့ပြည်သို့ ပြန်လည်ကြွဆင်းလာတော်မူသောနေ့ ဖြစ်ပါသည်။ မြန်မာတို့၏ ချစ်စရာယဉ်ကျေးမှု ပွဲတော်တစ်ခုလည်း ဖြစ်ပါတယ်။
+        </p>
+        <button class="btn-secondary" onclick="switchTab('dashboard-section')" style="margin-top: 20px;">ပင်မသို့</button>
+    </div>
+
+    <!-- Navigation Menu (Bottom Bar) -->
+    <div class="nav-tabs" id="nav-menu" style="display: none;">
+        <div class="nav-tab active" onclick="switchTab('dashboard-section')"><i class="fa-solid fa-house"></i>ပင်မ</div>
+        <div class="nav-tab" onclick="switchTab('draw-section')"><i class="fa-solid fa-gift"></i>မဲဖောက်</div>
+        <div class="nav-tab" onclick="switchTab('chat-section'); loadUsersList();"><i class="fa-solid fa-comments"></i>ချတ်</div>
+        <div class="nav-tab" onclick="switchTab('gallery-section')"><i class="fa-solid fa-photo-film"></i>ပြခန်း</div>
+        <div class="nav-tab" onclick="switchTab('story-section')"><i class="fa-solid fa-heart"></i>ရင်ဖွင့်သံ</div>
+    </div>
+</div>
+
+<!-- MEDIA FULLSCREEN MODAL -->
+<div id="media-modal" onclick="closeModal()">
+    <span style="position: absolute; top: 20px; right: 25px; font-size: 30px; color: #fff; cursor: pointer;"><i class="fa-solid fa-xmark"></i></span>
+    <div id="modal-content" style="max-width: 90%; max-height: 85vh; text-align: center;" onclick="event.stopPropagation()"></div>
+</div>
+
+<script>
+    // --- SUPABASE CONFIGURATION ---
+    const SUPABASE_URL = 'https://zxdekhsznppfdyxrnhyl.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4ZGVraHN6bnBwZmR5eHJuaHlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE2MTAzMDAsImV4cCI6MjEwNzE4NjMwMH0.0ArLGXt8toDesmWRFwBkopJBmxCApNwGX0prf7hCEpM';
+    
+    let supabaseClient = null;
+    try {
+        if (typeof supabase !== 'undefined') {
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } else {
+            alert('Supabase Library ချိတ်ဆက်၍မရပါ။');
+        }
+    } catch(e) { 
+        console.error(e); 
+    }
+
+    let currentUser = null;
+    let selectedRecipient = null;
+    let isAdmin = false;
+    const ADMIN_PASSWORD_SECRET = "thadingyut2026";
+
+    function switchTab(sectionId) {
+        document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+        document.getElementById(sectionId).classList.add('active');
+        
+        if (sectionId === 'gallery-section') {
+            loadMediaFromDB();
+        }
+        if (sectionId === 'draw-section') {
+            checkExistingDrawState();
+        }
+    }
+
+    async function handleRegister() {
+        const username = document.getElementById('auth-username').value.trim();
+        const password = document.getElementById('auth-password').value.trim();
+        if(!username || !password) { alert('Username နှင့် Password ဖြည့်ပါ။'); return; }
+
+        const { data: existing } = await supabaseClient.from('users').select('*').eq('username', username);
+        if(existing && existing.length > 0) { alert('ဤ Username ရှိနှင့်ပြီးသားပါ။'); return; }
+
+        const { error } = await supabaseClient.from('users').insert([{ username, password }]);
+        if(error) { alert('အကောင့်ဖွင့်၍ မရပါ: ' + error.message); return; }
+
+        currentUser = username;
+        alert('အကောင့်ဖွင့်ပြီးပါပြီ!');
+        loginSuccessSetup();
+    }
+
+    async function handleLogin() {
+        const username = document.getElementById('auth-username').value.trim();
+        const password = document.getElementById('auth-password').value.trim();
+        if(!username || !password) { alert('Username နှင့် Password ဖြည့်ပါ။'); return; }
+
+        const { data } = await supabaseClient.from('users').select('*').eq('username', username).eq('password', password);
+        if(!data || data.length === 0) { alert('Username သို့မဟုတ် Password မှားယွင်းနေပါသည်။'); return; }
+
+        currentUser = username;
+        loginSuccessSetup();
+    }
+
+    function loginSuccessSetup() {
+        document.getElementById('user-status').innerText = `👤 ${currentUser}`;
+        document.getElementById('nav-menu').style.display = 'flex';
+        switchTab('dashboard-section');
+    }
+
+    function showAdminLogin() {
+        document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+        document.getElementById('admin-login-section').classList.add('active');
+    }
+
+    function verifyAdmin() {
+        const pass = document.getElementById('admin-pass-input').value;
+        if(pass === ADMIN_PASSWORD_SECRET) {
+            isAdmin = true;
+            currentUser = "Admin";
+            document.getElementById('user-status').innerText = `👑 Admin`;
+            document.getElementById('nav-menu').style.display = 'flex';
+            switchTab('dashboard-section');
+        } else {
+            alert('Admin စကားဝှက် မှားယွင်းသည်။');
+        }
+    }
+
+    // --- 24-HOUR PERSISTENT LUCKY DRAW ---
+    function checkExistingDrawState() {
+        if(!currentUser) return;
+        const savedDraw = localStorage.getItem(`draw_record_${currentUser}`);
+        const lastTime = localStorage.getItem(`draw_time_${currentUser}`);
+        const now = new Date().getTime();
+
+        if(savedDraw && lastTime && (now - lastTime < 86400000) && !isAdmin) {
+            document.getElementById('winners-list').innerHTML = savedDraw;
+        } else {
+            document.getElementById('winners-list').innerHTML = '<div>မဲဖောက်ရန် ခလုတ်ကို နှိပ်ပါ...</div>';
+        }
+    }
+
+    async function startLuckyDraw() {
+        if(!currentUser) return;
+        const lastDrawTime = localStorage.getItem(`draw_time_${currentUser}`);
+        const now = new Date().getTime();
+
+        if(lastDrawTime && (now - lastDrawTime < 86400000) && !isAdmin) {
+            alert('သင် မဲဖောက်ပြီးပါပြီ။ ၂၄ နာရီပြည့်မှသာ ထပ်မံဖောက်နိုင်ပါမည်။');
+            checkExistingDrawState();
+            return;
+        }
+
+        let participants = [];
+        for(let i = 1; i <= 20; i++) { participants.push(`ပါဝင်သူ_${i}`); }
+        participants.push(currentUser);
+
+        let winners = [];
+        let tempPool = [...participants];
+        for(let i = 0; i < 4; i++) {
+            let idx = Math.floor(Math.random() * tempPool.length);
+            winners.push(tempPool.splice(idx, 1)[0]);
+        }
+
+        let isWinner = winners.includes(currentUser);
+        let html = '<ul style="list-style: none; padding: 0;">';
+        winners.forEach((w, i) => {
+            html += `<li>${i + 1}. 🎉 ${w} (၅,၀၀၀ ကျပ်)</li>`;
+        });
+        html += '</ul>';
+
+        if(isWinner) {
+            html += `
+                <div style="margin-top: 10px; padding-top: 6px; border-top: 1px dashed var(--secondary-color);">
+                    <p style="font-size: 11px; color: #fff; margin-bottom: 4px;">🎉 ဂုဏ်ယူပါတယ်! Screenshot ရိုက်ပြီး ဆုကြေးရယူပါ -</p>
+                    <a href="https://t.me/Up_55572" target="_blank" style="display: inline-block; background: #0088cc; color: white; padding: 6px 10px; border-radius: 4px; text-decoration: none; font-size: 12px; font-weight: bold;">
+                        <i class="fa-brands fa-telegram"></i> Telegram (@Up_55572)
+                    </a>
+                </div>
+            `;
+        } else {
+            html += `<div style="margin-top: 8px; color: #d90429; font-size: 12px;">ဆုမပေါက်သေးပါ။ နောက်တစ်ကြိမ် ထပ်ကြိုးစားပါ။</div>`;
+        }
+
+        document.getElementById('winners-list').innerHTML = html;
+        localStorage.setItem(`draw_record_${currentUser}`, html);
+        localStorage.setItem(`draw_time_${currentUser}`, now);
+        alert('သီတင်းကျွတ် ကံစမ်းမဲ ဖောက်ပြီးပါပြီ!');
+    }
+
+    // --- DIRECT MESSAGING ---
+    async function loadUsersList() {
+        if(!supabaseClient) return;
+        const { data } = await supabaseClient.from('users').select('username');
+        const container = document.getElementById('users-list-container');
+        container.innerHTML = '';
+        if(data) {
+            data.forEach(u => {
+                if(u.username !== currentUser) {
+                    const div = document.createElement('div');
+                    div.className = 'user-item';
+                    if(selectedRecipient === u.username) div.classList.add('active');
+                    div.innerHTML = `<i class="fa-solid fa-user"></i> ${u.username}`;
+                    div.onclick = () => selectRecipient(u.username, div);
+                    container.appendChild(div);
+                }
+            });
+        }
+    }
+
+    function selectRecipient(username, element) {
+        selectedRecipient = username;
+        document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+        document.getElementById('active-chat-title').innerText = `💬 ${username} နှင့် ပြောဆိုရန်`;
+        loadDirectMessages();
+    }
+
+    async function sendDirectMessage() {
+        const input = document.getElementById('chat-input');
+        const msg = input.value.trim();
+        if(!msg || !selectedRecipient) return;
+        await supabaseClient.from('messages').insert([{ sender: currentUser, recipient: selectedRecipient, message: msg }]);
+        input.value = '';
+        loadDirectMessages();
+    }
+
+    async function loadDirectMessages() {
+        if(!supabaseClient || !selectedRecipient) return;
+        const chatBox = document.getElementById('chat-messages');
+        const { data } = await supabaseClient.from('messages')
+            .select('*')
+            .or(`and(sender.eq.${currentUser},recipient.eq.${selectedRecipient}),and(sender.eq.${selectedRecipient},recipient.eq.${currentUser})`)
+            .order('created_at', { ascending: true });
+        chatBox.innerHTML = '';
+        if(data) {
+            data.forEach(m => {
+                const div = document.createElement('div');
+                div.className = 'chat-msg' + (m.sender === currentUser ? ' mine' : '');
+                div.innerHTML = `<span style="font-size:10px; color:#aaa; display:block;">${m.sender}</span> ${m.message}`;
+                chatBox.appendChild(div);
+            });
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    }
+
+    // --- LINK-BASED UNLIMITED MEDIA GALLERY ---
+    async function uploadMediaLink() {
+        const url = document.getElementById('media-url').value.trim();
+        const type = document.getElementById('media-type').value;
+        if(!url) { alert('လင့်ခ် (URL) ထည့်ပါ။'); return; }
+
+        const { error } = await supabaseClient.from('media').insert([{ username: currentUser, type, url }]);
+        if(!error) {
+            loadMediaFromDB();
+            document.getElementById('media-url').value = '';
+            alert('လင့်ခ် အောင်မြင်စွာ တင်ပြီးပါပြီ!');
+        } else {
+            alert('တင်၍ မရပါ: ' + error.message);
+        }
+    }
+
+    async function loadMediaFromDB() {
+        if(!supabaseClient) return;
+        const { data } = await supabaseClient.from('media').select('*');
+        if(data) {
+            renderMedia(data);
+        }
+    }
+
+    function getYouTubeEmbedUrl(url) {
+        let videoId = '';
+        if (url.includes('youtu.be/')) videoId = url.split('youtu.be/')[1]?.split('?')[0];
+        else if (url.includes('watch?v=')) videoId = url.split('watch?v=')[1]?.split('&')[0];
+        return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+    }
+
+    function renderMedia(mediaList) {
+        const grid = document.getElementById('media-grid');
+        grid.innerHTML = '';
+        if(mediaList.length === 0) {
+            grid.innerHTML = '<div style="grid-column: span 2; text-align: center; color: #777; font-size: 12px;">မီဒီယာ မရှိသေးပါ။</div>';
+            return;
+        }
+        mediaList.forEach(m => {
+            const card = document.createElement('div');
+            card.className = 'media-card';
+            card.onclick = () => openModal(m);
+
+            if(m.type === 'photo') {
+                card.innerHTML = `
+                    <img src="${m.url}" alt="Photo" onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=Invalid+Image';">
+                    <div class="media-user"><i class="fa-solid fa-user"></i> ${m.username || 'အမည်မသိ'}</div>
+                `;
+            } else {
+                if(m.url.includes('youtube.com') || m.url.includes('youtu.be')) {
+                    card.innerHTML = `
+                        <iframe src="${getYouTubeEmbedUrl(m.url)}" style="width:100%; height:100px; border:none;" pointer-events="none"></iframe>
+                        <div class="media-user"><i class="fa-solid fa-user"></i> ${m.username || 'အမည်မသိ'}</div>
+                    `;
+                } else {
+                    card.innerHTML = `
+                        <video src="${m.url}"></video>
+                        <div class="media-user"><i class="fa-solid fa-user"></i> ${m.username || 'အမည်မသိ'}</div>
+                    `;
+                }
+            }
+            grid.appendChild(card);
+        });
+    }
+
+    function openModal(m) {
+        const modal = document.getElementById('media-modal');
+        const content = document.getElementById('modal-content');
+        modal.style.display = 'flex';
+        if(m.type === 'photo') {
+            content.innerHTML = `<img src="${m.url}" style="max-width:100%; max-height:80vh; border-radius:8px; object-fit:contain;"><div style="margin-top:10px; color:#ffb703; font-size:14px;"><i class="fa-solid fa-user"></i> ${m.username}</div>`;
+        } else {
+            if(m.url.includes('youtube.com') || m.url.includes('youtu.be')) {
+                content.innerHTML = `<iframe src="${getYouTubeEmbedUrl(m.url)}" style="width:100%; height:70vh; border:none;" allowfullscreen></iframe><div style="margin-top:10px; color:#ffb703; font-size:14px;"><i class="fa-solid fa-user"></i> ${m.username}</div>`;
+            } else {
+                content.innerHTML = `<video src="${m.url}" controls autoplay style="max-width:100%; max-height:80vh; border-radius:8px;"></video><div style="margin-top:10px; color:#ffb703; font-size:14px;"><i class="fa-solid fa-user"></i> ${m.username}</div>`;
+            }
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('media-modal').style.display = 'none';
+        document.getElementById('modal-content').innerHTML = '';
+    }
+
+    // --- WISH WALL LOCAL STORAGE ---
+    function postWish() {
+        const text = document.getElementById('wish-input').value.trim();
+        if(!text) return;
+        let wishes = JSON.parse(localStorage.getItem('thadingyut_wishes') || '[]');
+        wishes.unshift({ user: currentUser || 'ဧည့်သည်', text, time: new Date().toLocaleDateString() });
+        localStorage.setItem('thadingyut_wishes', JSON.stringify(wishes));
+        document.getElementById('wish-input').value = '';
+        loadWishes();
+    }
+
+    function loadWishes() {
+        let wishes = JSON.parse(localStorage.getItem('thadingyut_wishes') || '[]');
+        const list = document.getElementById('wish-list');
+        list.innerHTML = '';
+        if(wishes.length === 0) {
+            list.innerHTML = '<div style="color:#777; text-align:center;">ဆုတောင်းစာ မရှိသေးပါ။</div>';
+            return;
+        }
+        wishes.forEach(w => {
+            const div = document.createElement('div');
+            div.style.cssText = 'background:#252525; padding:8px; border-radius:6px; margin-bottom:6px;';
+            div.innerHTML = `<b style="color:var(--secondary-color);">${w.user}:</b> ${w.text} <div style="font-size:10px; color:#888; text-align:right;">${w.time}</div>`;
+            list.appendChild(div);
+        });
+    }
+    loadWishes();
+</script>
+
+</body>
+</html>
